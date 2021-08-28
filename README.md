@@ -1,2 +1,2 @@
-# ImgShare.JS
-ImgShare rewrite into JS
+# ImgShare.go
+ImgShare rewrite into Go
