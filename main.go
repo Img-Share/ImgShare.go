@@ -29,13 +29,18 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 func ping(s *discordgo.Session, m *discordgo.MessageCreate) {
 	s.ChannelMessageSend(m.ChannelID, "pong")
+	println(m.Attachments[0].ProxyURL)
+}
+
+func updatestatus(s *discordgo.Session) {
+	s.UpdateGameStatus(0, "All hail the Gopher!")
 }
 
 func main() {
 	discord, err := discordgo.New("Bot " + Token)
+
 	commands = make(map[string]interface{})
 	commands["ping"] = ping
-
 	if err != nil {
 		panic(err)
 	}
@@ -46,6 +51,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	go updatestatus(discord)
 	fmt.Println("Now running bot. Press CTRL+C to quit")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
