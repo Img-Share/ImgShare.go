@@ -1,1 +1,4 @@
-var Token string = "your token"
+package main
+
+var Token string; 
+Token := "amogus";
