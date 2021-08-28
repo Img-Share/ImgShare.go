@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -11,6 +13,24 @@ import (
 )
 
 var commands map[string]interface{}
+
+func saveFile(fp string, url string) {
+	resp, err := http.Get(url)
+	if err != nil {
+		panic(err)
+	}
+	handle, err := os.Create(fp)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	defer handle.Close()
+	_, err = io.Copy(handle, resp.Body)
+
+	if err != nil {
+		panic(err)
+	}
+}
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
@@ -32,8 +52,17 @@ func ping(s *discordgo.Session, m *discordgo.MessageCreate) {
 	println(m.Attachments[0].ProxyURL)
 }
 
+func postmeme(s *discordgo.Session, m *discordgo.MessageCreate) {
+	if len(m.Attachments) < 1 {
+		s.ChannelMessageSend(m.ChannelID, "No image found.")
+		return
+	}
+	go saveFile("memes/"+m.Attachments[0].Filename, m.Attachments[0].ProxyURL)
+	s.ChannelMessageSend(m.ChannelID, "Meme posted!")
+}
+
 func updatestatus(s *discordgo.Session) {
-	s.UpdateGameStatus(0, "All hail the Gopher!")
+	s.UpdateGameStatus(0, "بيننا مجانا 2021-2020 البنجابية الحرة")
 }
 
 func main() {
@@ -41,6 +70,7 @@ func main() {
 
 	commands = make(map[string]interface{})
 	commands["ping"] = ping
+	commands["postmeme"] = postmeme
 	if err != nil {
 		panic(err)
 	}
